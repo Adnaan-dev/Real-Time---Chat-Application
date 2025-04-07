@@ -70,3 +70,12 @@ git clone https://github.com/your-username/realtime-chat-app.git
 cd realtime-chat-app
 npm install
 node index.js
+```
+
+## 📢 Connect with Me
+[![GitHub](https://img.shields.io/badge/GitHub-black?logo=github&logoColor=white)](https://github.com/Adnaan-dev)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-blue?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jan-adnan-farooq-b216b7321/)
+
+⭐ **Star this repository if you find it useful!** 🚀
+
+
