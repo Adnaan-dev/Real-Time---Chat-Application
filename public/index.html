@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App</title>
+  <style>
+    :root {
+      --bg-light: #f1f1f1;
+      --bg-dark: #1e1e1e;
+      --text-light: #000;
+      --text-dark: #fff;
+      --bubble-user: #DCF8C6;
+      --bubble-other: #E4E6EB;
+      --bubble-dark: #2f2f2f;
+      --system-msg: #ffefc0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: 0.3s;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    header, footer {
+      background-color: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    nav {
+      background: #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1rem;
+    }
+
+    nav a {
+      color: white;
+      padding: 1rem;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      background: #555;
+    }
+
+    #darkToggle {
+      background: transparent;
+      border: 1px solid white;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      max-width: 900px;
+      margin: auto;
+      width: 100%;
+    }
+
+    #users {
+      background: #e0ffe0;
+      color: #000;
+      padding: 0.5rem;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    body.dark #users {
+      background: #2b472b;
+      color: #fff;
+    }
+
+    #messages {
+      flex: 1;
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    body.dark #messages {
+      background-color: #2c2c2c;
+    }
+
+    #typing {
+      color: gray;
+      font-style: italic;
+      margin: 5px 0;
+      height: 20px;
+    }
+
+    .chat-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #message {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #sendBtn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .message-bubble {
+      max-width: 80%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--bubble-other);
+    }
+
+    body.dark .message-bubble {
+      background: var(--bubble-dark);
+      color: var(--text-dark);
+    }
+
+    .message-bubble.me {
+      background: var(--bubble-user);
+      margin-left: auto;
+    }
+
+    .message-bubble.system {
+      background: var(--system-msg);
+      color: #333;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .msg-header {
+      font-weight: bold;
+    }
+
+    .timestamp {
+      font-size: 0.8rem;
+      color: gray;
+      float: right;
+    }
+
+    @media screen and (max-width: 600px) {
+      nav {
+        flex-direction: column;
+      }
+
+      .chat-controls {
+        flex-direction: column;
+      }
+
+      #message, #sendBtn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header><h1>Chat App</h1></header>
+
+  <nav>
+    <div>
+      <a href="#">Home</a>
+      <a href="#">Chat</a>
+      <a href="#">About</a>
+    </div>
+    <button id="darkToggle">Toggle Dark Mode</button>
+  </nav>
+
+  <main>
+    <div id="users"><strong>Online Users:</strong> <ul id="userList"></ul></div>
+    <div id="messages"></div>
+    <div id="typing"></div>
+    <div class="chat-controls">
+      <input type="text" id="message" placeholder="Type a message" autocomplete="off" />
+      <button id="sendBtn">Send</button>
+    </div>
+  </main>
+
+  <footer>&copy; 2025 Chat App</footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const sendBtn = document.getElementById("sendBtn");
+    const messageInput = document.getElementById("message");
+    const allMessages = document.getElementById("messages");
+    const typingDiv = document.getElementById("typing");
+    const userList = document.getElementById("userList");
+    const darkToggle = document.getElementById("darkToggle");
+
+    let username = "";
+    while (!username) {
+      username = prompt("Enter your name:");
+    }
+
+    socket.emit("new-user-joined", username);
+
+    socket.on("message", (msg) => {
+      const div = document.createElement("div");
+      const isSystemMsg = msg.startsWith("🔔") || msg.startsWith("❌");
+
+      if (isSystemMsg) {
+        div.classList.add("message-bubble", "system");
+        div.innerText = msg;
+      } else {
+        const { user, message, timestamp } = parseMessage(msg);
+        div.classList.add("message-bubble");
+        if (user === username) div.classList.add("me");
+
+        div.innerHTML = `<div class="msg-header">${user} <span class="timestamp">${timestamp}</span></div>
+                         <div class="msg-text">${message}</div>`;
+      }
+
+      allMessages.appendChild(div);
+      allMessages.scrollTop = allMessages.scrollHeight;
+    });
+
+    function parseMessage(msg) {
+      const parts = msg.split(":");
+      const user = parts.shift();
+      const message = parts.join(":").trim();
+      const timestamp = new Date().toLocaleTimeString();
+      return { user, message, timestamp };
+    }
+
+    socket.on("user-list", (users) => {
+      userList.innerHTML = "";
+      users.forEach(u => {
+        const li = document.createElement("li");
+        li.innerText = u;
+        userList.appendChild(li);
+      });
+    });
+
+    const typingUsers = new Set();
+    const typingTimeouts = {};
+
+    socket.on("typing", (user) => {
+      typingUsers.add(user);
+      if (typingTimeouts[user]) clearTimeout(typingTimeouts[user]);
+
+      typingTimeouts[user] = setTimeout(() => {
+        typingUsers.delete(user);
+        updateTypingIndicator();
+      }, 1500);
+
+      updateTypingIndicator();
+    });
+
+    function updateTypingIndicator() {
+      const names = Array.from(typingUsers);
+      typingDiv.innerText = names.length === 0
+        ? ""
+        : names.length === 1
+        ? `${names[0]} is typing...`
+        : `${names.join(", ")} are typing...`;
+    }
+
+    function sendMessage() {
+      const msg = messageInput.value.trim();
+      if (msg !== "") {
+        socket.emit("user-message", { username, message: msg });
+        messageInput.value = "";
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    messageInput.addEventListener("input", () => {
+      socket.emit("typing");
+    });
+
+    darkToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+  </script>
+</body>
+</html>
