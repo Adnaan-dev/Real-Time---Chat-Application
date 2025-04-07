@@ -18,9 +18,11 @@ This is a fully functional and responsive **real-time chat app** built with **So
 
 ## 📸 Screenshots
 
+### 1st 
+![Light Mode Screenshot](https://github.com/user-attachments/assets/8a4c4b4f-8fef-44cd-b5d4-b5117893eb8b)
 
-![Chat Screenshot](![Image](https://github.com/user-attachments/assets/8a4c4b4f-8fef-44cd-b5d4-b5117893eb8b))  
-![Image](https://github.com/user-attachments/assets/058a87ee-c512-4bfb-a232-c1851b504a0d)
+### 2nd  
+![Dark Mode Screenshot](https://github.com/user-attachments/assets/058a87ee-c512-4bfb-a232-c1851b504a0d)
 
 ---
 
@@ -41,6 +43,7 @@ This is a fully functional and responsive **real-time chat app** built with **So
 2. Users can send and receive messages in real-time.
 3. While typing, other users see a “typing…” indicator.
 4. When someone joins or leaves, a message notifies the room.
+5. Dark mode toggle adjusts the UI theme on the fly.
 
 ---
 
@@ -48,9 +51,9 @@ This is a fully functional and responsive **real-time chat app** built with **So
 
 - `socket.emit()` is used to send events like messages, typing, join/leave.
 - `socket.on()` receives and handles incoming events.
-- User list is managed with socket IDs on the server.
+- Each user is identified by their name and socket ID.
 - CSS Grid and Flexbox are used for layout and responsiveness.
-- The dark mode is toggled with a class change and persists through the session.
+- Dark mode is toggled with a CSS class on the root container.
 
 ---
 
@@ -66,16 +69,4 @@ This is a fully functional and responsive **real-time chat app** built with **So
 git clone https://github.com/your-username/realtime-chat-app.git
 cd realtime-chat-app
 npm install
-
-
-## 📬 Contact
-
-Feel free to connect or reach out:
-
-- 👨‍💻 LinkedIn: [YourLinkedIn](https://www.linkedin.com/in/yourprofile)
-- 🐱 GitHub: [@yourusername](https://github.com/yourusername)
-
----
-
-⭐ If you liked this project, give it a star on GitHub and consider following for more!  
-
+node index.js
